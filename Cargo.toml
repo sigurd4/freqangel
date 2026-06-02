@@ -6,7 +6,7 @@ license = "GPL-3.0"
 description = "A tool for doing things with SDRAngel frequency csv-files."
 repository = "https://github.com/sigurd4/freqangel"
 keywords = ["radio", "sdr", "frequency", "freqencies", "csv"]
-categories = ["command-line-interface", "configuration"]
+categories = ["command-line-interface"]
 
 [dependencies]
 isahc = "2.0.0"
