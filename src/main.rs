@@ -187,13 +187,28 @@ impl Days
     }
 }
 
-#[derive(Default, PartialEq, PartialOrd, Clone)]
+#[derive(Default, Clone)]
 struct Notes
 {
     uti: Option<String>,
     station: Option<String>,
     language: Option<String>,
     location: Option<String>
+}
+
+impl PartialEq for Notes
+{
+    fn eq(&self, other: &Self) -> bool
+    {
+        self.to_string() == other.to_string()
+    }
+}
+impl PartialOrd for Notes
+{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering>
+    {
+        self.to_string().partial_cmp(&other.to_string())
+    }
 }
 
 impl core::fmt::Display for Notes
@@ -629,7 +644,7 @@ impl Freqs
         {
             FileType::SdrAngelCsv => {
                 let header = Self::SDRANGEL_CSV_HEADER.iter()
-                    .map(|title| title.title.replace(",", "_"))
+                    .map(|title| title.title.replace(",", "_").replace("\"", "_"))
                     .collect::<Vec<_>>()
                     .join(",");
                 writeln!(writer, "{header}").map_err(FormatFreqsError)?;
@@ -637,7 +652,7 @@ impl Freqs
                 for freq in freqs
                 {
                     let line = Self::SDRANGEL_CSV_HEADER.iter()
-                        .map(|title| (title.getter)(freq).replace(",", "_"))
+                        .map(|title| (title.getter)(freq).replace(",", "_").replace("\"", "_"))
                         .collect::<Vec<_>>()
                         .join(",");
                     writeln!(writer, "{line}").map_err(FormatFreqsError)?;
@@ -743,7 +758,18 @@ impl Freqs
 
         self.sort();
         self.freqs.dedup_by(|a, b| {
-            if a.freq_hertz == b.freq_hertz && a.notes.to_string() == b.notes.to_string()
+            if a.freq_hertz.is_none()
+            {
+                return true
+            }
+            if a.freq_hertz == b.freq_hertz && a.notes.to_string()
+                .replace(",", "_")
+                .replace("\"", "_")
+                .trim()
+                == b.notes.to_string()
+                    .replace(",", "_")
+                    .replace("\"", "_")
+                    .trim()
             {
                 *b = Freq {
                     freq_hertz: b.freq_hertz,
